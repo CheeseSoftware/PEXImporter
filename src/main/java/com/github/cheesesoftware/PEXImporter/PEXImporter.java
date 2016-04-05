@@ -181,11 +181,14 @@ public class PEXImporter extends JavaPlugin implements Listener {
                         suffix = options.getString("suffix");
                 }
 
+                List<String> group = user.getStringList("group");
+                final List<String> groupFinal = new ArrayList<String>(group);
+
                 final UUID uuid = uuidTemp;
                 final String userNameFinal = userName;
                 final String prefixFinal = prefix;
                 final String suffixFinal = suffix;
-                final List<PowerfulPermission> permissionsFinal = permissions;
+                final List<PowerfulPermission> permissionsFinal = new ArrayList<PowerfulPermission>(permissions);
 
                 permissionManager.createPlayer(userName, uuid, new ResponseRunnable(true) {
 
@@ -225,6 +228,21 @@ public class PEXImporter extends JavaPlugin implements Listener {
                                             getLogger().severe("Could not add player permission. " + response);
                                     }
                                 });
+                            }
+
+                            if (groupFinal != null) {
+                                for (final String groupName : groupFinal) {
+                                    permissionManager.addPlayerGroup(uuid, groupName, new ResponseRunnable() {
+
+                                        @Override
+                                        public void run() {
+                                            if (success)
+                                                getLogger().info("Added player group " + groupName + " to player " + userNameFinal);
+                                            else
+                                                getLogger().severe("Could not add player group. " + response);
+                                        }
+                                    });
+                                }
                             }
                         } else
                             getLogger().severe("Could not create player. " + response);

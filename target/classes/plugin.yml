@@ -1,5 +1,5 @@
 name: PEXImporter
 main: com.github.cheesesoftware.PEXImporter.PEXImporter
-version: 1.0
+version: 1.1
 author: gustav9797
 depend: [PowerfulPerms]
