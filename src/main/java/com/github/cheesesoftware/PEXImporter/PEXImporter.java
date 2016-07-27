@@ -15,11 +15,16 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.github.cheesesoftware.PowerfulPermsAPI.Group;
+import com.github.cheesesoftware.PowerfulPermsAPI.GroupPermissionExpiredEvent;
 import com.github.cheesesoftware.PowerfulPermsAPI.PermissionManager;
+import com.github.cheesesoftware.PowerfulPermsAPI.PlayerGroupExpiredEvent;
+import com.github.cheesesoftware.PowerfulPermsAPI.PlayerPermissionExpiredEvent;
+import com.github.cheesesoftware.PowerfulPermsAPI.PowerfulEvent;
+import com.github.cheesesoftware.PowerfulPermsAPI.PowerfulPermsListener;
 import com.github.cheesesoftware.PowerfulPermsAPI.PowerfulPermsPlugin;
 import com.github.cheesesoftware.PowerfulPermsAPI.ResponseRunnable;
 
-public class PEXImporter extends JavaPlugin implements Listener {
+public class PEXImporter extends JavaPlugin implements Listener, PowerfulPermsListener {
 
     public List<PowerfulPermission> getPermissions(ConfigurationSection section) {
         List<PowerfulPermission> permissions = new ArrayList<PowerfulPermission>();
@@ -53,12 +58,12 @@ public class PEXImporter extends JavaPlugin implements Listener {
     }
 
     public void onEnable() {
-        // getServer().getPluginManager().registerEvents(this, this);
         getDataFolder().mkdir();
 
         if (Bukkit.getPluginManager().isPluginEnabled("PowerfulPerms")) {
             PowerfulPermsPlugin plugin = (PowerfulPermsPlugin) Bukkit.getPluginManager().getPlugin("PowerfulPerms");
             final PermissionManager permissionManager = plugin.getPermissionManager();
+            permissionManager.getEventHandler().registerListener(this);
 
             File customConfigFile = new File(getDataFolder(), "permissions.yml");
             if (customConfigFile == null || !customConfigFile.exists()) {
@@ -278,6 +283,23 @@ public class PEXImporter extends JavaPlugin implements Listener {
 
     public void onDisable() {
 
+    }
+
+    @PowerfulEvent
+    public void onPlayerPermissionExpire(PlayerPermissionExpiredEvent e) {
+        String permission = e.getPermission().getPermissionString();
+        Bukkit.getLogger().info("Permission " + permission + " expired for player " + e.getPlayerUUID());
+    }
+
+    @PowerfulEvent
+    public void onPlayerGroupExpire(PlayerGroupExpiredEvent e) {
+        Bukkit.getLogger().info("Group " + e.getCachedGroup().getGroupId() + " expired for player " + e.getPlayerUUID());
+    }
+
+    @PowerfulEvent
+    public void onGroupPermissionExpire(GroupPermissionExpiredEvent e) {
+        String permission = e.getPermission().getPermissionString();
+        Bukkit.getLogger().info("Permission " + permission + " expired for group " + e.getGroup().getName());
     }
 
 }
