@@ -2,7 +2,9 @@ package com.github.cheesesoftware.PEXImporter;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -12,6 +14,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.github.cheesesoftware.PowerfulPermsAPI.Group;
 import com.github.cheesesoftware.PowerfulPermsAPI.PermissionManager;
 import com.github.cheesesoftware.PowerfulPermsAPI.PowerfulPermsPlugin;
 import com.github.cheesesoftware.PowerfulPermsAPI.ResponseRunnable;
@@ -24,7 +27,7 @@ public class PEXImporter extends JavaPlugin implements Listener {
         List<String> ownPermissions = section.getStringList("permissions");
         if (ownPermissions != null) {
             for (String permission : ownPermissions) {
-                permissions.add(new PowerfulPermission(permission, "", ""));
+                permissions.add(new PowerfulPermission(-1, permission, "", "", null));
             }
         }
 
@@ -37,7 +40,7 @@ public class PEXImporter extends JavaPlugin implements Listener {
                     ownPermissions = worldSection.getStringList("permissions");
                     if (ownPermissions != null) {
                         for (String permission : ownPermissions) {
-                            permissions.add(new PowerfulPermission(permission, worldName, ""));
+                            permissions.add(new PowerfulPermission(-1, permission, worldName, "", null));
                         }
                     }
 
@@ -64,6 +67,8 @@ public class PEXImporter extends JavaPlugin implements Listener {
             }
 
             FileConfiguration customConfig = YamlConfiguration.loadConfiguration(customConfigFile);
+
+            final HashMap<String, List<String>> groupParents = new HashMap<String, List<String>>();
 
             // Begin import
             ConfigurationSection groups = customConfig.getConfigurationSection("groups");
@@ -94,10 +99,10 @@ public class PEXImporter extends JavaPlugin implements Listener {
                         parents.add(parent);
                     }
                 }
+                groupParents.put(groupName, parents);
 
                 final String prefixFinal = prefix;
                 final String suffixFinal = suffix;
-                final List<String> parentsFinal = parents;
                 final List<PowerfulPermission> permissionsFinal = permissions;
 
                 permissionManager.createGroup(groupName, ladder, rank, new ResponseRunnable(true) {
@@ -105,14 +110,15 @@ public class PEXImporter extends JavaPlugin implements Listener {
                     @Override
                     public void run() {
                         if (super.success) {
+                            final int groupId = permissionManager.getGroup(groupName).getId();
                             getLogger().info("Imported group " + groupName);
-                            permissionManager.setGroupPrefix(groupName, prefixFinal, new ResponseRunnable(true) {
+                            permissionManager.setGroupPrefix(groupId, prefixFinal, new ResponseRunnable(true) {
 
                                 @Override
                                 public void run() {
                                     if (super.success) {
                                         getLogger().info("Set group " + groupName + " prefix to \"" + prefixFinal + "\"");
-                                        permissionManager.setGroupSuffix(groupName, suffixFinal, new ResponseRunnable(true) {
+                                        permissionManager.setGroupSuffix(groupId, suffixFinal, new ResponseRunnable(true) {
 
                                             @Override
                                             public void run() {
@@ -127,21 +133,8 @@ public class PEXImporter extends JavaPlugin implements Listener {
                                 }
                             });
 
-                            for (final String parent : parentsFinal) {
-                                permissionManager.addGroupParent(groupName, parent, new ResponseRunnable(true) {
-
-                                    @Override
-                                    public void run() {
-                                        if (success)
-                                            getLogger().info("Added group parent " + parent + " to group " + groupName);
-                                        else
-                                            getLogger().severe("Could not add group parent. " + response);
-                                    }
-                                });
-                            }
-
                             for (final PowerfulPermission permission : permissionsFinal) {
-                                permissionManager.addGroupPermission(groupName, permission.getPermissionString(), permission.getWorld(), permission.getServer(), new ResponseRunnable(true) {
+                                permissionManager.addGroupPermission(groupId, permission.getPermissionString(), permission.getWorld(), permission.getServer(), null, new ResponseRunnable(true) {
 
                                     @Override
                                     public void run() {
@@ -157,6 +150,33 @@ public class PEXImporter extends JavaPlugin implements Listener {
                     }
                 });
             }
+
+            for (Entry<String, List<String>> e : groupParents.entrySet()) {
+                final String groupName = e.getKey();
+                Group group = permissionManager.getGroup(groupName);
+                if (group == null) {
+                    getLogger().severe("Could add parent to null group " + groupName);
+                    continue;
+                }
+                for (final String parent : e.getValue()) {
+                    Group parentGroup = permissionManager.getGroup(parent);
+                    if (group == null) {
+                        getLogger().severe("Could not add null parent " + parent + " to group " + groupName);
+                        continue;
+                    }
+                    permissionManager.addGroupParent(group.getId(), parentGroup.getId(), new ResponseRunnable(true) {
+
+                        @Override
+                        public void run() {
+                            if (success)
+                                getLogger().info("Added group parent " + parent + " to group " + groupName);
+                            else
+                                getLogger().severe("Could not add group parent. " + response);
+                        }
+                    });
+                }
+            }
+
             ConfigurationSection users = customConfig.getConfigurationSection("users");
             for (final String userUUID : users.getKeys(false)) {
                 UUID uuidTemp;
@@ -218,21 +238,23 @@ public class PEXImporter extends JavaPlugin implements Listener {
                             });
 
                             for (final PowerfulPermission permission : permissionsFinal) {
-                                permissionManager.addPlayerPermission(uuid, userNameFinal, permission.getPermissionString(), permission.getWorld(), permission.getServer(), new ResponseRunnable(true) {
+                                permissionManager.addPlayerPermission(uuid, userNameFinal, permission.getPermissionString(), permission.getWorld(), permission.getServer(), null,
+                                        new ResponseRunnable(true) {
 
-                                    @Override
-                                    public void run() {
-                                        if (success)
-                                            getLogger().info("Added player permission " + permission.getPermissionString() + " to player " + userNameFinal);
-                                        else
-                                            getLogger().severe("Could not add player permission. " + response);
-                                    }
-                                });
+                                            @Override
+                                            public void run() {
+                                                if (success)
+                                                    getLogger().info("Added player permission " + permission.getPermissionString() + " to player " + userNameFinal);
+                                                else
+                                                    getLogger().severe("Could not add player permission. " + response);
+                                            }
+                                        });
                             }
 
                             if (groupFinal != null) {
                                 for (final String groupName : groupFinal) {
-                                    permissionManager.addPlayerGroup(uuid, groupName, new ResponseRunnable() {
+                                    Group group = permissionManager.getGroup(groupName);
+                                    permissionManager.addPlayerGroup(uuid, group.getId(), new ResponseRunnable(true) {
 
                                         @Override
                                         public void run() {
