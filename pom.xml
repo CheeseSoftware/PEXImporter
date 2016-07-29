@@ -3,18 +3,18 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.cheesesoftware</groupId>
 	<artifactId>PEXImporter</artifactId>
-	<version>1.2</version>
+	<version>1.2.0</version>
 	<build>
-        <resources>
-            <resource>
-                <targetPath>.</targetPath>
-                <filtering>true</filtering>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>plugin.yml</include>
-                </includes>
-            </resource>
-        </resources>
+		<resources>
+			<resource>
+				<targetPath>.</targetPath>
+				<filtering>true</filtering>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>plugin.yml</include>
+				</includes>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -59,12 +59,18 @@
 		</plugins>
 	</build>
 
+	<repositories>
+		<repository>
+			<id>alskebo-repo</id>
+			<url>http://repo.alskebo.com/repository/maven-releases</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.github.cheesesoftware</groupId>
 			<artifactId>PowerfulPermsAPI</artifactId>
-			<version>1.0</version>
-			<scope>provided</scope>
+			<version>1.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.spigotmc</groupId>
@@ -73,4 +79,17 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+	
+    <distributionManagement>
+        <repository>
+            <id>nexus</id>
+            <name>Releases</name>
+            <url>http://repo.alskebo.com/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus</id>
+            <name>Snapshots</name>
+            <url>http://repo.alskebo.com/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>
