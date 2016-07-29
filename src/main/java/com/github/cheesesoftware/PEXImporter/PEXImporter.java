@@ -276,8 +276,4 @@ public class PEXImporter extends JavaPlugin implements Listener {
             getLogger().severe("PowerfulPerms has to be loaded to be able to import permissions.");
     }
 
-    public void onDisable() {
-
-    }
-
 }
