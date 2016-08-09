@@ -271,6 +271,7 @@ public class PEXImporter extends JavaPlugin implements Listener {
                     }
                 });
             }
+            getLogger().info("PEXImporter has finished. Remove the plugin .jar file and restart.");
 
         } else
             getLogger().severe("PowerfulPerms has to be loaded to be able to import permissions.");
