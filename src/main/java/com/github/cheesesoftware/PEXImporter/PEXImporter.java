@@ -160,7 +160,7 @@ public class PEXImporter extends JavaPlugin implements Listener {
                 }
                 for (final String parent : e.getValue()) {
                     Group parentGroup = permissionManager.getGroup(parent);
-                    if (group == null) {
+                    if (parentGroup == null) {
                         getLogger().severe("Could not add null parent " + parent + " to group " + groupName);
                         continue;
                     }
