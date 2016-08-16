@@ -254,16 +254,19 @@ public class PEXImporter extends JavaPlugin implements Listener {
                             if (groupFinal != null) {
                                 for (final String groupName : groupFinal) {
                                     Group group = permissionManager.getGroup(groupName);
-                                    permissionManager.addPlayerGroup(uuid, group.getId(), new ResponseRunnable(true) {
+                                    if (group != null) {
+                                        permissionManager.addPlayerGroup(uuid, group.getId(), new ResponseRunnable(true) {
 
-                                        @Override
-                                        public void run() {
-                                            if (success)
-                                                getLogger().info("Added player group " + groupName + " to player " + userNameFinal);
-                                            else
-                                                getLogger().severe("Could not add player group. " + response);
-                                        }
-                                    });
+                                            @Override
+                                            public void run() {
+                                                if (success)
+                                                    getLogger().info("Added player group " + groupName + " to player " + userNameFinal);
+                                                else
+                                                    getLogger().severe("Could not add player group. " + response);
+                                            }
+                                        });
+                                    } else
+                                        getLogger().severe("Could not add player group. Group null.");
                                 }
                             }
                         } else
