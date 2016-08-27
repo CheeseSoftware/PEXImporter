@@ -238,7 +238,7 @@ public class PEXImporter extends JavaPlugin implements Listener {
                             });
 
                             for (final PowerfulPermission permission : permissionsFinal) {
-                                permissionManager.addPlayerPermission(uuid, userNameFinal, permission.getPermissionString(), permission.getWorld(), permission.getServer(), null,
+                                permissionManager.addPlayerPermission(uuid, permission.getPermissionString(), permission.getWorld(), permission.getServer(), null,
                                         new ResponseRunnable(true) {
 
                                             @Override
