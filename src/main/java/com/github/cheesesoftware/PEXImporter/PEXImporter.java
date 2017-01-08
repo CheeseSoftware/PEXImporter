@@ -219,9 +219,9 @@ public class PEXImporter extends JavaPlugin implements Listener {
                                     if (tenth.get().succeeded())
                                         getLogger().info("Added player group " + groupName + " to player " + userNameFinal);
                                     else
-                                        getLogger().severe("Could not add player group. " + tenth.get().getResponse());
+                                        getLogger().severe("Could not add player group \"" + groupName + "\"." + tenth.get().getResponse());
                                 } else
-                                    getLogger().severe("Could not add player group. Group null.");
+                                    getLogger().severe("Could not add player group \"" + groupName + "\". Group null.");
                             }
                         }
                     } else
